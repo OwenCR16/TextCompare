@@ -1,11 +1,28 @@
 ﻿@page "/"
+@using System.Text.RegularExpressions;
 
 <PageTitle>Home</PageTitle>
 
-<MudTextField T="string" Label="Text Box 1" Variant="Variant.Text" Text="@TextOne" Lines="5" />
-<MudTextField T="string" Label="Text Box 2" Variant="Variant.Text" Text="@TextTwo" Lines="5" /><br>
-<MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@Disabled">Primary</MudButton>
+<MudTextField T="string" Label="Text Box" Variant="Variant.Text" Immediate="true" ValueChanged="@((args) => UpdateText(args))" AutoGrow MaxLines="10" />
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@Disabled">Submit</MudButton><br>
+Word Count: @WordCount <br>
+Sentence Count: @SentenceCount <br>
+Paragraph Count: @ParagraphCount <br>
+@* render alerts when the button is pressed and something is wrong e.g. no text in x field.
+render alert when successful.
+have the text fields side-by-side in the future.
+have a list of details below that are only rendered once the button is pressed (they don't appear with no values).
+*@
+@*
+On a carousel:
+1) basic stats (word count, sentence count, paragraph count, top 5 most common words (excluding a/the/etcetc) - offer a drop down list of all words, estimated reading time)
+2) line chart of words per sentence, plus average
+3) bar chart of frequency of words with n letters (1,2,3...), plus average word length
+4) bar chart of paragraph length in sentences, plus average
+5) WHAT ELSE WOULD BE USEFUL FOR STUDENTS/ESSAY WRITERS/ETC
 
+maybe have some functions such as *replace all instances of this word with that word* 
+*@
 <br>
 <br>
 <br>
@@ -15,54 +32,27 @@
 <br>
 <br>
 <br>
-<br />
-<MudText Typo="Typo.h5" GutterBottom="true">Interactivity in this Template</MudText>
-<br />
-<MudText Typo="Typo.body2">
-    When you opt for the "Global" Interactivity Location, <br />
-    the render modes are defined in App.razor and consequently apply to all child components.<br />
-    In this case, providers are globally set in the MainLayout.<br />
-    <br />
-    On the other hand, if you choose the "Per page/component" Interactivity Location,<br />
-    it is necessary to include the <br />
-    <br />
-    &lt;MudPopoverProvider /&gt; <br />
-    &lt;MudDialogProvider /&gt; <br />
-    &lt;MudSnackbarProvider /&gt; <br />
-    <br />
-    components on every interactive page.<br />
-    <br />
-    If a render mode is not specified for a page, it defaults to Server-Side Rendering (SSR),<br />
-    similar to this page. While MudBlazor allows pages to be rendered in SSR,<br />
-    please note that interactive features, such as buttons and dropdown menus, will not be functional.
-</MudText>
-
-<br />
-<MudText Typo="Typo.h5" GutterBottom="true">What's New in Blazor with the Release of .NET 9</MudText>
 <br />
 
-<MudText Typo="Typo.h6" GutterBottom="true">Prerendering</MudText>
-<MudText Typo="Typo.body2" GutterBottom="true">
-    If you're exploring the features of .NET 9 Blazor,<br /> you might be pleasantly surprised to learn that each page is prerendered on the server,<br /> regardless of the selected render mode.<br /><br />
-    This means that you'll need to inject all necessary services on the server,<br /> even when opting for the wasm (WebAssembly) render mode.<br /><br />
-    This prerendering functionality is crucial to ensuring that WebAssembly mode feels fast and responsive,<br /> especially when it comes to initial page load times.<br /><br />
-    For more information on how to detect prerendering and leverage the RenderContext, you can refer to the following link:
-    <MudLink Href="https://github.com/dotnet/aspnetcore/issues/51468#issuecomment-1783568121" Target="_blank" Typo="Typo.body2" Color="Color.Primary">
-        More details
-    </MudLink>
-</MudText>
-
-<br />
-<MudText Typo="Typo.h6" GutterBottom="true">InteractiveAuto</MudText>
-<MudText Typo="Typo.body2">
-    A discussion on how to achieve this can be found here:
-    <MudLink Href="https://github.com/dotnet/aspnetcore/issues/51468#issue-1950424116" Target="_blank" Typo="Typo.body2" Color="Color.Primary">
-        More details
-    </MudLink>
-</MudText>
 
 @code {
-    private string TextOne {get;set;} = "";
-    private string TextTwo {get;set;} = "";
+    private string Text {get;set;} = "";
+    private MatchCollection? Words {get;set;}
+    private MatchCollection? Sentences {get;set;}
+    private MatchCollection? Paragraphs {get;set;}
     private bool Disabled {get;set;} = false;
+    private int WordCount {get;set;} = 0;
+    private int SentenceCount {get;set;} = 0;
+    private int ParagraphCount {get;set;} = 0;
+    private void UpdateText(string inputString)
+    {
+        if (inputString == null)
+            return;
+        Words = Regex.Matches(inputString, @"\w+");
+        WordCount = Words.Count;
+        Sentences = Regex.Matches(inputString + " ", @"[^\.!?]*[\.!?]+\s"); //this doesn't work when a number/source is appended to the punctuation mark e.g. from a thesis
+        SentenceCount = Sentences.Count;
+        Paragraphs = Regex.Matches(inputString + "\n", @".*\n"); //THIS IS CURRENTLY ALSO USING EMPTY LINES - FIX THIS
+        ParagraphCount = Paragraphs.Count;
+    }
 }

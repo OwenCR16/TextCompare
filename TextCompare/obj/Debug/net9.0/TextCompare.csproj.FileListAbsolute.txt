@@ -46,3 +46,4 @@ C:\Users\Owen Russell\Desktop\ProjectTextCompare\Server\TextCompare\obj\Debug\ne
 C:\Users\Owen Russell\Desktop\ProjectTextCompare\Server\TextCompare\obj\Debug\net9.0\TextCompare.pdb
 C:\Users\Owen Russell\Desktop\ProjectTextCompare\Server\TextCompare\obj\Debug\net9.0\TextCompare.genruntimeconfig.cache
 C:\Users\Owen Russell\Desktop\ProjectTextCompare\Server\TextCompare\obj\Debug\net9.0\ref\TextCompare.dll
+C:\Users\Owen Russell\Desktop\ProjectTextCompare\Server\TextCompare\obj\Debug\net9.0\TextCompare.sourcelink.json
