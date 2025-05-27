@@ -8,16 +8,24 @@
 Word Count: @WordCount <br>
 Sentence Count: @SentenceCount <br>
 Paragraph Count: @ParagraphCount <br>
-@* render alerts when the button is pressed and something is wrong e.g. no text in x field.
-render alert when successful.
-have the text fields side-by-side in the future.
-have a list of details below that are only rendered once the button is pressed (they don't appear with no values).
-*@
+@*add a title to these charts!*@
+<MudPaper Width=1000px Height=500px Class="doc-section-component-container">
+    <MudChart ChartType="ChartType.Bar" ChartSeries="@LettersInWordsSeries" @bind-SelectedIndex="LettersInWordsIndex" XAxisLabels="@LettersInWordsXAxisLabels" Width=1000px Height=500px ChartOptions="LettersInWordsChartOptions"></MudChart>
+</MudPaper><br>
+@*words in sentences can either be a bar chart for loooong texts, or a line graph for shorter texts*@
+<MudPaper Width=1300px Height=500px Class="doc-section-component-container">
+    <MudChart ChartType="ChartType.Bar" ChartSeries="@WordsInSentencesSeries" @bind-SelectedIndex="WordsInSentencesIndex" XAxisLabels="@WordsInSentencesXAxisLabels" Width=1300px Height=500px ChartOptions="WordsInSentencesChartOptions"></MudChart>
+</MudPaper><br>
+@*DEFINITELY have a toggle for this between line chart and bar chart*@
+<MudPaper Width=1000px Height=500px Class="doc-section-component-container">
+    <MudChart ChartType="ChartType.Bar" ChartSeries="@SentencesInParagraphsSeries" @bind-SelectedIndex="SentencesInParagraphsIndex" XAxisLabels="@SentencesInParagraphsXAxisLabels" Width=1000px Height=500px ChartOptions="SentencesInParagraphsChartOptions"></MudChart>
+</MudPaper><br>
+
 @*
 On a carousel:
 1) basic stats (word count, sentence count, paragraph count, top 5 most common words (excluding a/the/etcetc) - offer a drop down list of all words, estimated reading time)
 2) line chart of words per sentence, plus average
-3) bar chart of frequency of words with n letters (1,2,3...), plus average word length
+3) bar chart of frequency of words with n letters (1,2,3...10+), plus average word length
 4) bar chart of paragraph length in sentences, plus average
 5) WHAT ELSE WOULD BE USEFUL FOR STUDENTS/ESSAY WRITERS/ETC
 
@@ -44,6 +52,29 @@ maybe have some functions such as *replace all instances of this word with that 
     private int WordCount {get;set;} = 0;
     private int SentenceCount {get;set;} = 0;
     private int ParagraphCount {get;set;} = 0;
+    
+    //PUT THE BELOW IN SEPARATE COMPONENTS FOR EACH GRAPH?
+    private int LettersInWordsIndex {get;set;} = -1;
+    private int WordsInSentencesIndex {get;set;} = -1;
+    private int SentencesInParagraphsIndex {get;set;} = -1;
+    private List<ChartSeries> LettersInWordsSeries {get;set;} = new List<ChartSeries>() 
+    {
+        new ChartSeries() { Name = "User Text", Data = new double[10] }
+    };
+    private List<ChartSeries> WordsInSentencesSeries {get;set;} = new List<ChartSeries>() 
+    {
+        new ChartSeries() { Name = "User Text", Data = new double[17] }
+    };
+    private List<ChartSeries> SentencesInParagraphsSeries {get;set;} = new List<ChartSeries>() 
+    {
+        new ChartSeries() { Name = "User Text", Data = new double[10] }
+    };
+    private string[] LettersInWordsXAxisLabels {get;set;} = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+" };
+    private string[] WordsInSentencesXAxisLabels {get;set;} = { "1-4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20+" }; //INSTEAD HAVE DYNAMIC LABELS DEPENDING ON OCCURENCES?
+    private string[] SentencesInParagraphsXAxisLabels {get;set;} = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+" };
+    private ChartOptions LettersInWordsChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
+    private ChartOptions WordsInSentencesChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 2};
+    private ChartOptions SentencesInParagraphsChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
     private void UpdateText(string inputString)
     {
         if (inputString == null)
@@ -54,5 +85,108 @@ maybe have some functions such as *replace all instances of this word with that 
         SentenceCount = Sentences.Count;
         Paragraphs = Regex.Matches(inputString + "\n", @".*\n"); //THIS IS CURRENTLY ALSO USING EMPTY LINES - FIX THIS
         ParagraphCount = Paragraphs.Count;
+        LettersInWordsSeries = new List<ChartSeries>()
+        {
+            UpdateLettersInWordsChart()
+        };
+        WordsInSentencesSeries = new List<ChartSeries>()
+        {
+            UpdateWordsInSentencesChart()
+        };
+        SentencesInParagraphsSeries = new List<ChartSeries>()
+        {
+            UpdateSentencesInParagraphsChart()
+        };
+    }
+    //possible to refactor the below - make smaller chunks of these method that are the same their own methods
+    private ChartSeries UpdateLettersInWordsChart()
+    {
+        double[] LettersInWordsData = new double[10];
+        if (Words == null)
+            return new ChartSeries();
+        
+        for (int i = 0; i<10 ; i++)
+        {
+            int count = 0;
+            foreach (Match word in Words)
+            {
+                if (i < 9 && word.Length == i + 1)
+                    count++;
+                else if (i == 9 && word.Length >= i + 1)
+                    count++;
+            }  
+            LettersInWordsData[i] = count;
+        }
+
+        AutoAdjustChartYAxisTicks(LettersInWordsData, LettersInWordsChartOptions);
+        ChartSeries LettersInWordsSeries = new ChartSeries() { Name = "User Text", Data = LettersInWordsData };
+        return LettersInWordsSeries;
+    }
+    private ChartSeries UpdateWordsInSentencesChart()
+    {
+        double[] WordsInSentencesData = new double[17];
+        if (Sentences == null)
+            return new ChartSeries();
+        
+        for (int i = 3; i<20 ; i++)
+        {
+            int count = 0;
+            foreach (Match sentence in Sentences)
+            {
+                MatchCollection SentenceWords = Regex.Matches(sentence.ToString(), @"\w+");
+                if (i == 3 && SentenceWords.Count <= i + 1)
+                    count++;
+                else if (i < 20 && SentenceWords.Count == i + 1)
+                    count++;
+                else if (i == 20 && SentenceWords.Count >= i + 1)
+                    count++;
+            } 
+            WordsInSentencesData[i - 3] = count;
+        }
+
+        AutoAdjustChartYAxisTicks(WordsInSentencesData, WordsInSentencesChartOptions);
+        ChartSeries WordsInSentencesSeries = new ChartSeries() { Name = "User Text", Data = WordsInSentencesData };
+        return WordsInSentencesSeries;
+    }
+    private ChartSeries UpdateSentencesInParagraphsChart()
+    {
+        double[] SentencesInParagraphsData = new double[10];
+        if (Paragraphs == null)
+            return new ChartSeries();
+        
+        for (int i = 0; i<10 ; i++)
+        {
+            int count = 0;
+            foreach (Match paragraph in Paragraphs)
+            {
+                MatchCollection ParagraphSentences = Regex.Matches(paragraph.ToString(), @"\w+");
+                if (i < 9 && ParagraphSentences.Count == i + 1)
+                    count++;
+                else if (i == 9 && ParagraphSentences.Count >= i + 1)
+                    count++;
+            }  
+            SentencesInParagraphsData[i] = count;
+        }
+
+        AutoAdjustChartYAxisTicks(SentencesInParagraphsData, SentencesInParagraphsChartOptions);
+        ChartSeries SentencesInParagraphsSeries = new ChartSeries() { Name = "User Text", Data = SentencesInParagraphsData };
+        return SentencesInParagraphsSeries;
+    }
+    private void AutoAdjustChartYAxisTicks(double[] data, ChartOptions chartOptions)
+    {
+        foreach (double count in data)
+        {
+            if (count > 5)
+                chartOptions.YAxisTicks = 2;
+            if (count > 10)
+                chartOptions.YAxisTicks = 5;
+            if (count > 25)
+                chartOptions.YAxisTicks = 10;
+            if (count > 50)
+                chartOptions.YAxisTicks = 20;
+            if (count > 150)
+                chartOptions.YAxisTicks = 50;
+            //mudchart does ad inf on its own
+        }
     }
 }
