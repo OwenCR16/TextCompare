@@ -16,18 +16,15 @@ Show: @SwitchChartText()<MudSwitch @bind-Value="BarOrLineCharts"></MudSwitch>
 
 @if (BarOrLineCharts)
 {
-    //this is all a component 
     <MudPaper Width=1000px Height=650px Class="doc-section-component-container">
         <br><br>
         <MudText Typo="Typo.h4" Align="Align.Center">Letters In Words</MudText>
         <MudText Typo="Typo.subtitle2" Align="Align.Center">X = Words (in order), Y = Word Length in Letters</MudText>
-        @*HAVE A LINE FOR EACH SENTENCE*@
         <MudChart ChartType="ChartType.Line" ChartSeries="@LettersInWordsLineSeries"  Width="100%" Height="350px" ChartOptions="LettersInWordsLineChartOptions" XAxisLabels="@LettersInWordsLineXAxisLabels" CanHideSeries/>
     </MudPaper><br>
 }
 else
 {
-    //this is all a component too
     <MudPaper Width=1000px Height=650px Class="doc-section-component-container">
         <br><br>
         <MudText Typo="Typo.h4" Align="Align.Center">Letters In Words</MudText>
@@ -81,30 +78,28 @@ On a carousel:
 
 maybe have some functions such as *replace all instances of this word with that word* 
 *@
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br />
 
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
 @code {
     public string Text {get;set;} = "";
+    public bool Disabled {get;set;} = false;
+    public bool BarOrLineCharts {get;set;} = false;
     public MatchCollection? Words {get;set;}
     public MatchCollection? Sentences {get;set;}
     public MatchCollection? Paragraphs {get;set;}
-    public bool Disabled {get;set;} = false;
     public int WordCount {get;set;} = 0;
     public int SentenceCount {get;set;} = 0;
     public int ParagraphCount {get;set;} = 0;
-    public bool BarOrLineCharts {get;set;} = false;
-    
-    //PUT THE BELOW IN SEPARATE COMPONENTS FOR EACH GRAPH?
     public int LettersInWordsIndex {get;set;} = -1;
     public int WordsInSentencesIndex {get;set;} = -1;
     public int SentencesInParagraphsIndex {get;set;} = -1;
@@ -131,57 +126,66 @@ maybe have some functions such as *replace all instances of this word with that 
     public ChartOptions SentencesInParagraphsChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
     private void UpdateText(string inputString)
     {
+        //perhaps confine methods to .cs class files/objects for readability e.g. "data collector for x"
         if (inputString == null)
             return;
+        UpdateMatches(inputString);
+        LettersInWordsBarSeries = new List<ChartSeries>(){UpdateLettersInWordsBarChart()};
+        LettersInWordsLineSeries = UpdateLettersInWordsLineChart();
+        WordsInSentencesSeries = new List<ChartSeries>(){UpdateWordsInSentencesChart()};
+        SentencesInParagraphsSeries = new List<ChartSeries>(){UpdateSentencesInParagraphsChart()};
+    }
+    private void UpdateMatches(string inputString) //UNFINISHED
+    {
         Words = Regex.Matches(inputString, @"\w+");
         WordCount = Words.Count;
         Sentences = Regex.Matches(inputString + " ", @"[^\.!?]*[\.!?]+\s"); //this doesn't work when a number/source is appended to the punctuation mark e.g. from a thesis
         SentenceCount = Sentences.Count;
         Paragraphs = Regex.Matches(inputString + "\n", @".*\n"); //THIS IS CURRENTLY ALSO USING EMPTY LINES - FIX THIS
         ParagraphCount = Paragraphs.Count;
-
-        LettersInWordsBarSeries = new List<ChartSeries>()
-        {
-            UpdateLettersInWordsBarChart()
-        };
-        LettersInWordsLineSeries = UpdateLettersInWordsLineChart(); //NEEDS TO RETURN MULTIPLE SERIES
-    
-        WordsInSentencesSeries = new List<ChartSeries>()
-        {
-            UpdateWordsInSentencesChart()
-        };
-
-        SentencesInParagraphsSeries = new List<ChartSeries>()
-        {
-            UpdateSentencesInParagraphsChart()
-        };
     }
     //possible to refactor the below - make smaller chunks of these methods that are the same their own methods
     private ChartSeries UpdateLettersInWordsBarChart()
     {
         if (Words == null)
             return new ChartSeries();
-
-        double[] LettersInWordsData = new double[10];
-        for (int i = 0; i<10 ; i++)
-        {
-            int count = 0;
-            foreach (Match word in Words)
-            {
-                if (i < 9 && word.Length == i + 1)
-                    count++;
-                else if (i == 9 && word.Length >= i + 1)
-                    count++;
-            }  
-            LettersInWordsData[i] = count;
-        }
-
-        AutoAdjustChartYAxisTicks(LettersInWordsData, LettersInWordsBarChartOptions);
+        double[] LettersInWordsData = GetLIWBarChartData(10, Words);
+        AutoAdjustChartYAxisTicks(LettersInWordsData.Max(), LettersInWordsBarChartOptions);
         ChartSeries LettersInWordsSeries = new ChartSeries() { Name = "User Text", Data = LettersInWordsData };
         return LettersInWordsSeries;
     }
+    private double[] GetLIWBarChartData(int length, MatchCollection words)
+    {
+        double[] Data = new double[length];
+        for (int i = 0; i<length ; i++)
+        {
+            int count = 0;
+            foreach (Match word in words)
+            {
+                if (i < length - 1 && word.Length == i + 1)
+                    count++;
+                else if (i == length - 1 && word.Length >= i + 1)
+                    count++;
+            }  
+            Data[i] = count;
+        }
+        return Data;
+    }
     private List<ChartSeries> UpdateLettersInWordsLineChart()
     {
+        if (Words == null || Words.Count == 0)
+            return new List<ChartSeries>();
+
+        if (Sentences == null || Sentences.Count == 0)
+        {
+            LettersInWordsLineXAxisLabels = AutoAdjustLineChartXAxisTicks(Words.Count);
+            return new List<ChartSeries>(){GetLIWLineChartDataOneSentence(Words, 1)};
+        }
+        //The below is no longer giving immediate updates to the chart, only after a full stop is added.
+        //probably because things are being update sentence by sentence?
+        return GetLIWLineChartDataSentences(Sentences);
+
+        /*
         if (Words == null || Words.Count == 0)
             return new List<ChartSeries>();
 
@@ -215,13 +219,59 @@ maybe have some functions such as *replace all instances of this word with that 
             {
                 largestSentence = LettersInWordsSeries[i].Data.Length;
                 LettersInWordsLineXAxisLabels = AutoAdjustLineChartXAxisTicks(SentenceWords.Count);
-            }
-                
+            }   
         }
 
         if (AllWords.Count > 0)
-            AutoAdjustChartYAxisTicks(AllWords.ToArray(), LettersInWordsLineChartOptions);
+            AutoAdjustChartYAxisTicks(AllWords.Max(), LettersInWordsLineChartOptions);
         return LettersInWordsSeries;
+        */
+    }
+    private ChartSeries GetLIWLineChartDataOneSentence(MatchCollection words, int sentenceNumber)
+    {
+        double[] LettersInWordsData = new double[words.Count];
+        for (int i = 0; i < words.Count; i++)
+        {
+            LettersInWordsData[i] = words[i].Length;
+        }
+        return new ChartSeries() { Name = $"Sentence {sentenceNumber}", Data = LettersInWordsData };
+    }
+    private List<ChartSeries> GetLIWLineChartDataSentences(MatchCollection sentences)
+    {
+        List<ChartSeries> lettersInWordsSeries = new List<ChartSeries>();
+        List<double> allLongestWordLengths = new List<double>();
+        for (int i = 0; i < sentences.Count; i++)
+        {
+            MatchCollection sentenceWords = Regex.Matches(sentences[i].ToString(), @"\w+");
+            lettersInWordsSeries.Add(GetLIWLineChartDataOneSentence(sentenceWords, i + 1));
+            allLongestWordLengths.Add(GetLongestWordLengthInSentence(sentences));
+        }
+        LettersInWordsLineXAxisLabels = AutoAdjustLineChartXAxisTicks(FindLongestSentenceLength(sentences));
+        //was bugged out, unecessary to fix right now.
+        //AutoAdjustChartYAxisTicks(allLongestWordLengths.Max(), LettersInWordsLineChartOptions);
+        return lettersInWordsSeries;
+    }
+    private int FindLongestSentenceLength(MatchCollection sentences)
+    {
+        List<int> sentenceLengths = new List<int>();
+        foreach (Match sentence in sentences)
+        {
+            MatchCollection sentenceWords = Regex.Matches(sentence.ToString(), @"\w+");
+            sentenceLengths.Add(sentenceWords.Count);
+        }
+        return sentenceLengths.Max();
+    }
+    private double GetLongestWordLengthInSentence(MatchCollection sentence)
+    {
+        if (sentence.Count == 0)
+           return 0;
+
+        List<double> allWordLengths = new List<double>();
+        foreach (Match word in sentence)
+        {
+            allWordLengths.Add(word.Length);
+        }
+        return allWordLengths.Max();
     }
     private ChartSeries UpdateWordsInSentencesChart()
     {
@@ -245,7 +295,7 @@ maybe have some functions such as *replace all instances of this word with that 
             WordsInSentencesData[i - 3] = count;
         }
 
-        AutoAdjustChartYAxisTicks(WordsInSentencesData, WordsInSentencesChartOptions);
+        AutoAdjustChartYAxisTicks(WordsInSentencesData.Max(), WordsInSentencesChartOptions);
         ChartSeries WordsInSentencesSeries = new ChartSeries() { Name = "User Text", Data = WordsInSentencesData };
         return WordsInSentencesSeries;
     }
@@ -269,15 +319,15 @@ maybe have some functions such as *replace all instances of this word with that 
             SentencesInParagraphsData[i] = count;
         }
 
-        AutoAdjustChartYAxisTicks(SentencesInParagraphsData, SentencesInParagraphsChartOptions);
+        AutoAdjustChartYAxisTicks(SentencesInParagraphsData.Max(), SentencesInParagraphsChartOptions);
         ChartSeries SentencesInParagraphsSeries = new ChartSeries() { Name = "User Text", Data = SentencesInParagraphsData };
         return SentencesInParagraphsSeries;
     }
-    private void AutoAdjustChartYAxisTicks(double[] data, ChartOptions chartOptions)
+    private void AutoAdjustChartYAxisTicks(double? maxValue, ChartOptions chartOptions)
     {
-        if (data == null)
+        if (maxValue == null)
             return;
-        switch (data.Max())
+        switch (maxValue)
         {
             case < 10:
                 chartOptions.YAxisTicks = 2;
