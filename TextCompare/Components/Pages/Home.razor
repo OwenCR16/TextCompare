@@ -8,18 +8,68 @@
 Word Count: @WordCount <br>
 Sentence Count: @SentenceCount <br>
 Paragraph Count: @ParagraphCount <br>
-@*add a title to these charts!*@
-<MudPaper Width=1000px Height=500px Class="doc-section-component-container">
-    <MudChart ChartType="ChartType.Bar" ChartSeries="@LettersInWordsSeries" @bind-SelectedIndex="LettersInWordsIndex" XAxisLabels="@LettersInWordsXAxisLabels" Width=1000px Height=500px ChartOptions="LettersInWordsChartOptions"></MudChart>
-</MudPaper><br>
+<br>
+Show: @SwitchChartText()<MudSwitch @bind-Value="BarOrLineCharts"></MudSwitch>
+<br>
+
+@*refactor the letters in words charts below before moving on*@
+
+@if (BarOrLineCharts)
+{
+    //this is all a component 
+    <MudPaper Width=1000px Height=650px Class="doc-section-component-container">
+        <br><br>
+        <MudText Typo="Typo.h4" Align="Align.Center">Letters In Words</MudText>
+        <MudText Typo="Typo.subtitle2" Align="Align.Center">X = Words (in order), Y = Word Length in Letters</MudText>
+        @*HAVE A LINE FOR EACH SENTENCE*@
+        <MudChart ChartType="ChartType.Line" ChartSeries="@LettersInWordsLineSeries"  Width="100%" Height="350px" ChartOptions="LettersInWordsLineChartOptions" XAxisLabels="@LettersInWordsLineXAxisLabels" CanHideSeries/>
+    </MudPaper><br>
+}
+else
+{
+    //this is all a component too
+    <MudPaper Width=1000px Height=650px Class="doc-section-component-container">
+        <br><br>
+        <MudText Typo="Typo.h4" Align="Align.Center">Letters In Words</MudText>
+        <MudText Typo="Typo.subtitle2" Align="Align.Center">X = Word Length in Letters, Y = Frequency</MudText>
+        <MudChart ChartType="ChartType.Bar" ChartSeries="@LettersInWordsBarSeries" @bind-SelectedIndex="LettersInWordsIndex" XAxisLabels="@LettersInWordsBarXAxisLabels" Width=1000px Height=500px ChartOptions="LettersInWordsBarChartOptions"></MudChart>
+    </MudPaper><br>
+}
+
+
 @*words in sentences can either be a bar chart for loooong texts, or a line graph for shorter texts*@
-<MudPaper Width=1300px Height=500px Class="doc-section-component-container">
-    <MudChart ChartType="ChartType.Bar" ChartSeries="@WordsInSentencesSeries" @bind-SelectedIndex="WordsInSentencesIndex" XAxisLabels="@WordsInSentencesXAxisLabels" Width=1300px Height=500px ChartOptions="WordsInSentencesChartOptions"></MudChart>
-</MudPaper><br>
+@*THIS DOESN'T SEEM TO PRODUCE CORRECT RESULTS?*@
+@if (BarOrLineCharts)
+{
+
+}
+else
+{
+    <MudPaper Width=1000px Height=650px Class="doc-section-component-container">
+        <br><br>
+        <MudText Typo="Typo.h4" Align="Align.Center">Words In Sentences</MudText>
+        <MudText Typo="Typo.subtitle2" Align="Align.Center">X = Sentence Length in Words, Y = Frequency</MudText>
+        <MudChart ChartType="ChartType.Bar" ChartSeries="@WordsInSentencesSeries" @bind-SelectedIndex="WordsInSentencesIndex" XAxisLabels="@WordsInSentencesXAxisLabels" Width=1000px Height=500px ChartOptions="WordsInSentencesChartOptions"></MudChart>
+    </MudPaper><br>
+}
+
+
 @*DEFINITELY have a toggle for this between line chart and bar chart*@
-<MudPaper Width=1000px Height=500px Class="doc-section-component-container">
-    <MudChart ChartType="ChartType.Bar" ChartSeries="@SentencesInParagraphsSeries" @bind-SelectedIndex="SentencesInParagraphsIndex" XAxisLabels="@SentencesInParagraphsXAxisLabels" Width=1000px Height=500px ChartOptions="SentencesInParagraphsChartOptions"></MudChart>
-</MudPaper><br>
+@*THIS DOESN'T SEEM TO PRODUCE CORRECT RESULTS?*@
+@if (BarOrLineCharts)
+{
+
+}
+else
+{
+    <MudPaper Width=1000px Height=650px Class="doc-section-component-container">
+        <br><br>
+        <MudText Typo="Typo.h4" Align="Align.Center">Sentences In Paragraphs</MudText>
+        <MudText Typo="Typo.subtitle2" Align="Align.Center">X = Paragraph Length in Sentences, Y = Frequency</MudText>
+        <MudChart ChartType="ChartType.Bar" ChartSeries="@SentencesInParagraphsSeries" @bind-SelectedIndex="SentencesInParagraphsIndex" XAxisLabels="@SentencesInParagraphsXAxisLabels" Width=1000px Height=500px ChartOptions="SentencesInParagraphsChartOptions"></MudChart>
+    </MudPaper><br>
+}
+
 
 @*
 On a carousel:
@@ -44,37 +94,41 @@ maybe have some functions such as *replace all instances of this word with that 
 
 
 @code {
-    private string Text {get;set;} = "";
-    private MatchCollection? Words {get;set;}
-    private MatchCollection? Sentences {get;set;}
-    private MatchCollection? Paragraphs {get;set;}
-    private bool Disabled {get;set;} = false;
-    private int WordCount {get;set;} = 0;
-    private int SentenceCount {get;set;} = 0;
-    private int ParagraphCount {get;set;} = 0;
+    public string Text {get;set;} = "";
+    public MatchCollection? Words {get;set;}
+    public MatchCollection? Sentences {get;set;}
+    public MatchCollection? Paragraphs {get;set;}
+    public bool Disabled {get;set;} = false;
+    public int WordCount {get;set;} = 0;
+    public int SentenceCount {get;set;} = 0;
+    public int ParagraphCount {get;set;} = 0;
+    public bool BarOrLineCharts {get;set;} = false;
     
     //PUT THE BELOW IN SEPARATE COMPONENTS FOR EACH GRAPH?
-    private int LettersInWordsIndex {get;set;} = -1;
-    private int WordsInSentencesIndex {get;set;} = -1;
-    private int SentencesInParagraphsIndex {get;set;} = -1;
-    private List<ChartSeries> LettersInWordsSeries {get;set;} = new List<ChartSeries>() 
+    public int LettersInWordsIndex {get;set;} = -1;
+    public int WordsInSentencesIndex {get;set;} = -1;
+    public int SentencesInParagraphsIndex {get;set;} = -1;
+    public List<ChartSeries> LettersInWordsBarSeries {get;set;} = new List<ChartSeries>() 
     {
         new ChartSeries() { Name = "User Text", Data = new double[10] }
     };
-    private List<ChartSeries> WordsInSentencesSeries {get;set;} = new List<ChartSeries>() 
+    public List<ChartSeries> LettersInWordsLineSeries {get;set;} = new List<ChartSeries>();
+    public List<ChartSeries> WordsInSentencesSeries {get;set;} = new List<ChartSeries>() 
     {
         new ChartSeries() { Name = "User Text", Data = new double[17] }
     };
-    private List<ChartSeries> SentencesInParagraphsSeries {get;set;} = new List<ChartSeries>() 
+    public List<ChartSeries> SentencesInParagraphsSeries {get;set;} = new List<ChartSeries>() 
     {
         new ChartSeries() { Name = "User Text", Data = new double[10] }
     };
-    private string[] LettersInWordsXAxisLabels {get;set;} = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+" };
-    private string[] WordsInSentencesXAxisLabels {get;set;} = { "1-4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20+" }; //INSTEAD HAVE DYNAMIC LABELS DEPENDING ON OCCURENCES?
-    private string[] SentencesInParagraphsXAxisLabels {get;set;} = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+" };
-    private ChartOptions LettersInWordsChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
-    private ChartOptions WordsInSentencesChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 2};
-    private ChartOptions SentencesInParagraphsChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
+    public string[] LettersInWordsBarXAxisLabels {get;set;} = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+" };
+    public string[] LettersInWordsLineXAxisLabels {get;set;} = [];
+    public string[] WordsInSentencesXAxisLabels {get;set;} = { "1-4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20+" }; //INSTEAD HAVE DYNAMIC LABELS DEPENDING ON OCCURENCES?
+    public string[] SentencesInParagraphsXAxisLabels {get;set;} = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+" };
+    public ChartOptions LettersInWordsBarChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
+    public ChartOptions LettersInWordsLineChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
+    public ChartOptions WordsInSentencesChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 2};
+    public ChartOptions SentencesInParagraphsChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
     private void UpdateText(string inputString)
     {
         if (inputString == null)
@@ -85,26 +139,30 @@ maybe have some functions such as *replace all instances of this word with that 
         SentenceCount = Sentences.Count;
         Paragraphs = Regex.Matches(inputString + "\n", @".*\n"); //THIS IS CURRENTLY ALSO USING EMPTY LINES - FIX THIS
         ParagraphCount = Paragraphs.Count;
-        LettersInWordsSeries = new List<ChartSeries>()
+
+        LettersInWordsBarSeries = new List<ChartSeries>()
         {
-            UpdateLettersInWordsChart()
+            UpdateLettersInWordsBarChart()
         };
+        LettersInWordsLineSeries = UpdateLettersInWordsLineChart(); //NEEDS TO RETURN MULTIPLE SERIES
+    
         WordsInSentencesSeries = new List<ChartSeries>()
         {
             UpdateWordsInSentencesChart()
         };
+
         SentencesInParagraphsSeries = new List<ChartSeries>()
         {
             UpdateSentencesInParagraphsChart()
         };
     }
-    //possible to refactor the below - make smaller chunks of these method that are the same their own methods
-    private ChartSeries UpdateLettersInWordsChart()
+    //possible to refactor the below - make smaller chunks of these methods that are the same their own methods
+    private ChartSeries UpdateLettersInWordsBarChart()
     {
-        double[] LettersInWordsData = new double[10];
         if (Words == null)
             return new ChartSeries();
-        
+
+        double[] LettersInWordsData = new double[10];
         for (int i = 0; i<10 ; i++)
         {
             int count = 0;
@@ -118,8 +176,51 @@ maybe have some functions such as *replace all instances of this word with that 
             LettersInWordsData[i] = count;
         }
 
-        AutoAdjustChartYAxisTicks(LettersInWordsData, LettersInWordsChartOptions);
+        AutoAdjustChartYAxisTicks(LettersInWordsData, LettersInWordsBarChartOptions);
         ChartSeries LettersInWordsSeries = new ChartSeries() { Name = "User Text", Data = LettersInWordsData };
+        return LettersInWordsSeries;
+    }
+    private List<ChartSeries> UpdateLettersInWordsLineChart()
+    {
+        if (Words == null || Words.Count == 0)
+            return new List<ChartSeries>();
+
+        List<ChartSeries> LettersInWordsSeries = new List<ChartSeries>();
+        if (Sentences == null || Sentences.Count == 0)
+        {
+            double[] LettersInWordsData = new double[Words.Count];
+            for (int i = 0; i < Words.Count; i++)
+            {
+                LettersInWordsData[i] = Words[i].Length;
+            }
+            LettersInWordsSeries.Add(new ChartSeries() { Name = "Sentence 1", Data = LettersInWordsData });
+            LettersInWordsLineXAxisLabels = AutoAdjustLineChartXAxisTicks(Words.Count);
+            return LettersInWordsSeries;
+        }
+
+        List<Double> AllWords = new List<Double>();
+        int largestSentence = 0;
+        for (int i = 0; i < Sentences.Count; i++)
+        {
+            MatchCollection SentenceWords = Regex.Matches(Sentences[i].ToString(), @"\w+");
+            double[] LettersInWordsData = new double[SentenceWords.Count];
+            for (int j = 0; j < SentenceWords.Count; j++)
+            {
+                LettersInWordsData[j] = SentenceWords[j].Length;
+                AllWords.Add(SentenceWords[j].Length);
+            }
+            LettersInWordsSeries.Add(new ChartSeries() { Name = $"Sentence {i + 1}", Data = LettersInWordsData });
+
+            if (LettersInWordsSeries[i].Data.Length > largestSentence)
+            {
+                largestSentence = LettersInWordsSeries[i].Data.Length;
+                LettersInWordsLineXAxisLabels = AutoAdjustLineChartXAxisTicks(SentenceWords.Count);
+            }
+                
+        }
+
+        if (AllWords.Count > 0)
+            AutoAdjustChartYAxisTicks(AllWords.ToArray(), LettersInWordsLineChartOptions);
         return LettersInWordsSeries;
     }
     private ChartSeries UpdateWordsInSentencesChart()
@@ -174,19 +275,44 @@ maybe have some functions such as *replace all instances of this word with that 
     }
     private void AutoAdjustChartYAxisTicks(double[] data, ChartOptions chartOptions)
     {
-        foreach (double count in data)
+        if (data == null)
+            return;
+        switch (data.Max())
         {
-            if (count > 5)
+            case < 10:
                 chartOptions.YAxisTicks = 2;
-            if (count > 10)
+                break;
+            case < 25:
                 chartOptions.YAxisTicks = 5;
-            if (count > 25)
+                break;
+            case < 50:
                 chartOptions.YAxisTicks = 10;
-            if (count > 50)
+                break;
+            case < 150:
                 chartOptions.YAxisTicks = 20;
-            if (count > 150)
+                break;
+            case >= 150:
                 chartOptions.YAxisTicks = 50;
-            //mudchart does ad inf on its own
+                break;
+            //mudchart does ad inf on its own?
         }
+    }
+    private string[] AutoAdjustLineChartXAxisTicks(int count)
+    {
+        string[] labels = new string[count];
+        if (count == 0)
+            return labels;
+        for (int i = 0; i < count; i++)
+        {
+            labels[i] = $"{i + 1}";
+        }
+        return labels;
+    }
+    private string SwitchChartText()
+    {
+        if (BarOrLineCharts)
+            return "Line Charts";
+        else
+            return "Bar Charts";
     }
 }
