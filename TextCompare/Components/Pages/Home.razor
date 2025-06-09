@@ -16,11 +16,12 @@ Show: @SwitchChartText()<MudSwitch @bind-Value="BarOrLineCharts"></MudSwitch>
 
 @if (BarOrLineCharts)
 {
+    //X AXIS GOES CRAZY WITH LONG SENTENCES (UNREADABLE) - change x axis labels to be one every 5/10 when sentences get larger.
     <MudPaper Width=1000px Height=650px Class="doc-section-component-container">
         <br><br>
         <MudText Typo="Typo.h4" Align="Align.Center">Letters In Words</MudText>
         <MudText Typo="Typo.subtitle2" Align="Align.Center">X = Words (in order), Y = Word Length in Letters</MudText>
-        <MudChart ChartType="ChartType.Line" ChartSeries="@LettersInWordsLineSeries"  Width="100%" Height="350px" ChartOptions="LettersInWordsLineChartOptions" XAxisLabels="@LettersInWordsLineXAxisLabels" CanHideSeries/>
+        <MudChart ChartType="ChartType.Line" ChartSeries="@LettersInWordsLineSeries" Width="100%" Height="350px" ChartOptions="LettersInWordsLineChartOptions" XAxisLabels="@LettersInWordsLineXAxisLabels" CanHideSeries/>
     </MudPaper><br>
 }
 else
@@ -180,9 +181,10 @@ maybe have some functions such as *replace all instances of this word with that 
         {
             LettersInWordsLineXAxisLabels = AutoAdjustLineChartXAxisTicks(Words.Count);
             return new List<ChartSeries>(){GetLIWLineChartDataOneSentence(Words, 1)};
+            //MAKE AN AVERAGE SERIES?
         }
         //The below is no longer giving immediate updates to the chart, only after a full stop is added.
-        //probably because things are being update sentence by sentence?
+        //Because: maybe the xaxis labels are being updated only once the sentence is finished?
         return GetLIWLineChartDataSentences(Sentences);
 
         /*
@@ -234,7 +236,7 @@ maybe have some functions such as *replace all instances of this word with that 
         {
             LettersInWordsData[i] = words[i].Length;
         }
-        return new ChartSeries() { Name = $"Sentence {sentenceNumber}", Data = LettersInWordsData };
+        return new ChartSeries() { Name = $"Sentence {sentenceNumber} ({words.Count} wds)", Data = LettersInWordsData };
     }
     private List<ChartSeries> GetLIWLineChartDataSentences(MatchCollection sentences)
     {
