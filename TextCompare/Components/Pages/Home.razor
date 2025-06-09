@@ -16,7 +16,6 @@ Show: @SwitchChartText()<MudSwitch @bind-Value="BarOrLineCharts"></MudSwitch>
 
 @if (BarOrLineCharts)
 {
-    //X AXIS GOES CRAZY WITH LONG SENTENCES (UNREADABLE) - change x axis labels to be one every 5/10 when sentences get larger.
     <MudPaper Width=1000px Height=650px Class="doc-section-component-container">
         <br><br>
         <MudText Typo="Typo.h4" Align="Align.Center">Letters In Words</MudText>
@@ -351,12 +350,27 @@ maybe have some functions such as *replace all instances of this word with that 
     }
     private string[] AutoAdjustLineChartXAxisTicks(int count)
     {
+        switch (count)
+        {
+            case 0:
+                return new string[count];;
+            case >=40:
+                return FillLabelsAscending(count, 10);
+            case >=20:
+                return FillLabelsAscending(count, 5);
+            default:
+                return FillLabelsAscending(count, 1);
+        }
+    }
+    private string[] FillLabelsAscending (int count, int interval)
+    {
         string[] labels = new string[count];
         if (count == 0)
             return labels;
         for (int i = 0; i < count; i++)
         {
-            labels[i] = $"{i + 1}";
+            if ((i + 1) % interval == 0)
+                labels[i] = $"{i + 1}";
         }
         return labels;
     }

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TextCompare")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8bb7bc170a92e7dc362cb2f6783aa9f67f095e1d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0df7a4da02747ac4a162ba7f42066953abc7411b")]
 [assembly: System.Reflection.AssemblyProductAttribute("TextCompare")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TextCompare")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
