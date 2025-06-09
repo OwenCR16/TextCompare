@@ -4,15 +4,17 @@
 <PageTitle>Home</PageTitle>
 
 <MudTextField T="string" Label="Text Box" Variant="Variant.Text" Immediate="true" ValueChanged="@((args) => UpdateText(args))" AutoGrow MaxLines="10" />
-<MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@Disabled">Submit</MudButton><br>
-Word Count: @WordCount <br>
-Sentence Count: @SentenceCount <br>
-Paragraph Count: @ParagraphCount <br>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@Disabled">Submit</MudButton>
+<br>
+Word Count: @WordCount 
+<br>
+Sentence Count: @SentenceCount 
+<br>
+Paragraph Count: @ParagraphCount 
+<br>
 <br>
 Show: @SwitchChartText()<MudSwitch @bind-Value="BarOrLineCharts"></MudSwitch>
 <br>
-
-@*refactor the letters in words charts below before moving on*@
 
 @if (BarOrLineCharts)
 {
@@ -32,7 +34,6 @@ else
         <MudChart ChartType="ChartType.Bar" ChartSeries="@LettersInWordsBarSeries" @bind-SelectedIndex="LettersInWordsIndex" XAxisLabels="@LettersInWordsBarXAxisLabels" Width=1000px Height=500px ChartOptions="LettersInWordsBarChartOptions"></MudChart>
     </MudPaper><br>
 }
-
 
 @*words in sentences can either be a bar chart for loooong texts, or a line graph for shorter texts*@
 @*THIS DOESN'T SEEM TO PRODUCE CORRECT RESULTS?*@
@@ -182,51 +183,8 @@ maybe have some functions such as *replace all instances of this word with that 
             return new List<ChartSeries>(){GetLIWLineChartDataOneSentence(Words, 1)};
             //MAKE AN AVERAGE SERIES?
         }
-        //The below is no longer giving immediate updates to the chart, only after a full stop is added.
-        //Because: maybe the xaxis labels are being updated only once the sentence is finished?
+
         return GetLIWLineChartDataSentences(Sentences);
-
-        /*
-        if (Words == null || Words.Count == 0)
-            return new List<ChartSeries>();
-
-        List<ChartSeries> LettersInWordsSeries = new List<ChartSeries>();
-        if (Sentences == null || Sentences.Count == 0)
-        {
-            double[] LettersInWordsData = new double[Words.Count];
-            for (int i = 0; i < Words.Count; i++)
-            {
-                LettersInWordsData[i] = Words[i].Length;
-            }
-            LettersInWordsSeries.Add(new ChartSeries() { Name = "Sentence 1", Data = LettersInWordsData });
-            LettersInWordsLineXAxisLabels = AutoAdjustLineChartXAxisTicks(Words.Count);
-            return LettersInWordsSeries;
-        }
-
-        List<Double> AllWords = new List<Double>();
-        int largestSentence = 0;
-        for (int i = 0; i < Sentences.Count; i++)
-        {
-            MatchCollection SentenceWords = Regex.Matches(Sentences[i].ToString(), @"\w+");
-            double[] LettersInWordsData = new double[SentenceWords.Count];
-            for (int j = 0; j < SentenceWords.Count; j++)
-            {
-                LettersInWordsData[j] = SentenceWords[j].Length;
-                AllWords.Add(SentenceWords[j].Length);
-            }
-            LettersInWordsSeries.Add(new ChartSeries() { Name = $"Sentence {i + 1}", Data = LettersInWordsData });
-
-            if (LettersInWordsSeries[i].Data.Length > largestSentence)
-            {
-                largestSentence = LettersInWordsSeries[i].Data.Length;
-                LettersInWordsLineXAxisLabels = AutoAdjustLineChartXAxisTicks(SentenceWords.Count);
-            }   
-        }
-
-        if (AllWords.Count > 0)
-            AutoAdjustChartYAxisTicks(AllWords.Max(), LettersInWordsLineChartOptions);
-        return LettersInWordsSeries;
-        */
     }
     private ChartSeries GetLIWLineChartDataOneSentence(MatchCollection words, int sentenceNumber)
     {
