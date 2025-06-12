@@ -36,10 +36,9 @@ else
 }
 
 @*words in sentences can either be a bar chart for loooong texts, or a line graph for shorter texts*@
-@*THIS DOESN'T SEEM TO PRODUCE CORRECT RESULTS?*@
 @if (BarOrLineCharts)
 {
-
+    //similar to the previous - a line chart that shows the number of words in each sentence chronologically (the first sentence, then the second sentence, and so on.)
 }
 else
 {
@@ -145,7 +144,75 @@ maybe have some functions such as *replace all instances of this word with that 
         Paragraphs = Regex.Matches(inputString + "\n", @".*\n"); //THIS IS CURRENTLY ALSO USING EMPTY LINES - FIX THIS
         ParagraphCount = Paragraphs.Count;
     }
-    //possible to refactor the below - make smaller chunks of these methods that are the same their own methods
+    private void AutoAdjustChartYAxisTicks(double? maxValue, ChartOptions chartOptions)
+    {
+        if (maxValue == null)
+            return;
+        switch (maxValue)
+        {
+            case < 10:
+                chartOptions.YAxisTicks = 2;
+                break;
+            case < 25:
+                chartOptions.YAxisTicks = 5;
+                break;
+            case < 50:
+                chartOptions.YAxisTicks = 10;
+                break;
+            case < 150:
+                chartOptions.YAxisTicks = 20;
+                break;
+            case >= 150:
+                chartOptions.YAxisTicks = 50;
+                break;
+            //mudchart does ad inf on its own?
+        }
+    }
+    private string[] AutoAdjustLineChartXAxisTicks(int count)
+    {
+        switch (count)
+        {
+            case 0:
+                return new string[count];;
+            case >=40:
+                return FillLabelsAscending(count, 10);
+            case >=20:
+                return FillLabelsAscending(count, 5);
+            default:
+                return FillLabelsAscending(count, 1);
+        }
+    }
+    private string[] FillLabelsAscending (int count, int interval)
+    {
+        string[] labels = new string[count];
+        if (count == 0)
+            return labels;
+        for (int i = 0; i < count; i++)
+        {
+            if ((i + 1) % interval == 0)
+                labels[i] = $"{i + 1}";
+        }
+        return labels;
+    }
+    private string SwitchChartText()
+    {
+        if (BarOrLineCharts)
+            return "Line Charts";
+        else
+            return "Bar Charts";
+    }
+
+
+
+
+
+
+
+
+
+
+
+    //the below should at some point be turned into component(s)
     private ChartSeries UpdateLettersInWordsBarChart()
     {
         if (Words == null)
@@ -232,6 +299,17 @@ maybe have some functions such as *replace all instances of this word with that 
         }
         return allWordLengths.Max();
     }
+
+
+
+
+
+
+
+
+
+
+    //the below should at some point be turned into component(s)
     private ChartSeries UpdateWordsInSentencesChart()
     {
         double[] WordsInSentencesData = new double[7];
@@ -252,6 +330,20 @@ maybe have some functions such as *replace all instances of this word with that 
         ChartSeries WordsInSentencesSeries = new ChartSeries() { Name = "User Text", Data = WordsInSentencesData };
         return WordsInSentencesSeries;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //the below should at some point be turned into component(s)
     private ChartSeries UpdateSentencesInParagraphsChart()
     {
         double[] SentencesInParagraphsData = new double[10];
@@ -276,61 +368,16 @@ maybe have some functions such as *replace all instances of this word with that 
         ChartSeries SentencesInParagraphsSeries = new ChartSeries() { Name = "User Text", Data = SentencesInParagraphsData };
         return SentencesInParagraphsSeries;
     }
-    private void AutoAdjustChartYAxisTicks(double? maxValue, ChartOptions chartOptions)
-    {
-        if (maxValue == null)
-            return;
-        switch (maxValue)
-        {
-            case < 10:
-                chartOptions.YAxisTicks = 2;
-                break;
-            case < 25:
-                chartOptions.YAxisTicks = 5;
-                break;
-            case < 50:
-                chartOptions.YAxisTicks = 10;
-                break;
-            case < 150:
-                chartOptions.YAxisTicks = 20;
-                break;
-            case >= 150:
-                chartOptions.YAxisTicks = 50;
-                break;
-            //mudchart does ad inf on its own?
-        }
-    }
-    private string[] AutoAdjustLineChartXAxisTicks(int count)
-    {
-        switch (count)
-        {
-            case 0:
-                return new string[count];;
-            case >=40:
-                return FillLabelsAscending(count, 10);
-            case >=20:
-                return FillLabelsAscending(count, 5);
-            default:
-                return FillLabelsAscending(count, 1);
-        }
-    }
-    private string[] FillLabelsAscending (int count, int interval)
-    {
-        string[] labels = new string[count];
-        if (count == 0)
-            return labels;
-        for (int i = 0; i < count; i++)
-        {
-            if ((i + 1) % interval == 0)
-                labels[i] = $"{i + 1}";
-        }
-        return labels;
-    }
-    private string SwitchChartText()
-    {
-        if (BarOrLineCharts)
-            return "Line Charts";
-        else
-            return "Bar Charts";
-    }
+
+
+
+
+
+
+
+
+
+
+
+    
 }
