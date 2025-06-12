@@ -119,7 +119,7 @@ maybe have some functions such as *replace all instances of this word with that 
     };
     public string[] LettersInWordsBarXAxisLabels {get;set;} = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+" };
     public string[] LettersInWordsLineXAxisLabels {get;set;} = [];
-    public string[] WordsInSentencesXAxisLabels {get;set;} = { "1-4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20+" }; //INSTEAD HAVE DYNAMIC LABELS DEPENDING ON OCCURENCES?
+    public string[] WordsInSentencesXAxisLabels {get;set;} = { "1-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30+" }; //INSTEAD HAVE DYNAMIC LABELS DEPENDING ON OCCURENCES?
     public string[] SentencesInParagraphsXAxisLabels {get;set;} = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+" };
     public ChartOptions LettersInWordsBarChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
     public ChartOptions LettersInWordsLineChartOptions {get;set;} = new ChartOptions() {YAxisTicks = 1};
@@ -140,7 +140,7 @@ maybe have some functions such as *replace all instances of this word with that 
     {
         Words = Regex.Matches(inputString, @"\w+");
         WordCount = Words.Count;
-        Sentences = Regex.Matches(inputString + " ", @"[^\.!?]*[\.!?]+\s"); //this doesn't work when a number/source is appended to the punctuation mark e.g. from a thesis
+        Sentences = Regex.Matches(inputString + " ", @"[^\.!?]*[\.!?]+\s"); //SENTENCES DOESN'T WORK FOR THE LAST SENTENCE IN A PARAGRAPH
         SentenceCount = Sentences.Count;
         Paragraphs = Regex.Matches(inputString + "\n", @".*\n"); //THIS IS CURRENTLY ALSO USING EMPTY LINES - FIX THIS
         ParagraphCount = Paragraphs.Count;
@@ -234,24 +234,18 @@ maybe have some functions such as *replace all instances of this word with that 
     }
     private ChartSeries UpdateWordsInSentencesChart()
     {
-        double[] WordsInSentencesData = new double[17];
+        double[] WordsInSentencesData = new double[7];
         if (Sentences == null)
             return new ChartSeries();
         
-        for (int i = 3; i<20 ; i++)
+        for (int i = 0; i < 7 ; i++)
         {
-            int count = 0;
             foreach (Match sentence in Sentences)
             {
                 MatchCollection SentenceWords = Regex.Matches(sentence.ToString(), @"\w+");
-                if (i == 3 && SentenceWords.Count <= i + 1)
-                    count++;
-                else if (i < 20 && SentenceWords.Count == i + 1)
-                    count++;
-                else if (i == 20 && SentenceWords.Count >= i + 1)
-                    count++;
-            } 
-            WordsInSentencesData[i - 3] = count;
+                if (SentenceWords.Count / 5 == i || (SentenceWords.Count / 5 >= i && i == 6))
+                    WordsInSentencesData[i]++;
+            }
         }
 
         AutoAdjustChartYAxisTicks(WordsInSentencesData.Max(), WordsInSentencesChartOptions);
